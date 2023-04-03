@@ -9,29 +9,27 @@ using Newtonsoft.Json;
 
 namespace Webion.Pdf.Function;
 
-[FunctionsStartup(typeof(Startup))]
 public class Function : IHttpFunction
 {
     public async Task HandleAsync(HttpContext context)
     {
         using var pdfDest = new MemoryStream();
-        using var sw = new PdfWriter(pdfDest);
-        sw.SetCloseStream(false);
+        using var writer = new PdfWriter(pdfDest);
+        writer.SetCloseStream(false);
 
         using var bodyReader = new StreamReader(context.Request.Body);
         var html = JsonConvert.DeserializeObject<string>(await bodyReader.ReadToEndAsync());
 
-        ConverterProperties converterProperties = new ConverterProperties();
-        HtmlConverter.ConvertToPdf(html, sw, converterProperties);
-        
-        context.Response.StatusCode = StatusCodes.Status200OK;
+        HtmlConverter.ConvertToPdf(html, writer);
 
         using var pdfStream = new MemoryStream(pdfDest.ToArray());
-        pdfStream.Position = 0;
+
         using var reader = new StreamReader(pdfStream);
         
         var base64 = System.Convert.ToBase64String(pdfDest.GetBuffer());
-        await context.Response.BodyWriter.WriteAsync(Encoding.UTF8.GetBytes(base64));
+        context.Response.StatusCode = StatusCodes.Status200OK;
+        
+        await context.Response.WriteAsync(base64, context.RequestAborted);
 
         return;
     }
