@@ -1,10 +1,7 @@
-using System.Text;
 using Google.Cloud.Functions.Framework;
-using Google.Cloud.Functions.Hosting;
 using iText.Html2pdf;
 using iText.Kernel.Pdf;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Webion.Pdf.Function;
